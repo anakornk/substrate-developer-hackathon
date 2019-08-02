@@ -1,0 +1,88 @@
+#!/bin/bash
+#
+# Fix react-native specific issues with various modules
+set -eo pipefail
+
+function log_fix {
+  echo "applying fix: \"$*\""
+}
+
+# Remove the require("sqlite3") call in knex, since react-native statically
+# packs any require calls it sees, regardless if they will occur or not.
+function fix_knex_sqlite3 {
+  log_fix "${FUNCNAME[0]}"
+  cp scripts/react-native-fixes/sqlite3.js node_modules/sqlite3/lib/sqlite3.js
+}
+
+# generate module paths needed for dynamic requiring
+function fix_rn_unbundle {
+  log_fix "${FUNCNAME[0]}"
+  rm -rf node_modules/react-native/local-cli/core/__fixtures__/files/package.json && \
+  cp -f scripts/react-native-fixes/_stream_readable.js node_modules/readable-stream/lib/_stream_readable.js
+}
+
+function fix_rn_networking_timeout {
+  log_fix "${FUNCNAME[0]}"
+  cp -f scripts/react-native-fixes/RCTNetworking node_modules/react-native/Libraries/Network/RCTNetworking.android.js
+}
+
+function fix_ios_max_http_connections {
+  log_fix "${FUNCNAME[0]}"
+  source1="node_modules/react-native/Libraries/Network/RCTHTTPRequestHandler.mm"
+
+  if grep -Fq "setHTTPMaximumConnectionsPerHost" $source1
+  then
+    echo "Fix not applied, it may have already been applied"
+  else
+    awk -v n=67 -v s="    [configuration setHTTPMaximumConnectionsPerHost:25];" 'NR == n {print s} {print}' \
+    $source1 > $source1'.tmp' && mv $source1'.tmp' $source1
+  fi
+}
+
+function fix_form_data_package_json {
+  log_fix "${FUNCNAME[0]}"
+  source="node_modules/form-data/package.json"
+
+  jq 'del(.["browser"]."./lib/form_data.js") | del(.["react-native"]."./lib/form_data")' \
+  $source > $source'.tmp' && mv $source'.tmp' $source
+}
+
+function fix_node_fetch {
+  log_fix "${FUNCNAME[0]}"
+  # source="node_modules/isomorphic-fetch/node_modules/node-fetch/index.js"
+  # source1="node_modules/isomorphic-fetch/node_modules/node-fetch/package.json"
+  source="node_modules/node-fetch/lib/index.js"
+  source1="node_modules/node-fetch/package.json"
+
+  awk '{sub(/^[ \t \t \t]*req.abort\(\);/, "try { req.abort(); } catch(e) { console.warn(\"Node-fetch error: \", e); }")}1' \
+  $source > $source'.tmp' && mv $source'.tmp' $source
+
+  awk '{sub(/^[ \t \t \t]*const headers = createHeadersLenient\(res.headers\);/, "const headers = res.headers ? createHeadersLenient(res.headers) : new Headers();")}1' \
+  $source > $source'.tmp' && mv $source'.tmp' $source
+
+  awk '{sub(/^[ \t]*Error.captureStackTrace\(this, this.constructor\);/,"\/* Error.captureStackTrace(this, this.constructor); *\/")}1' \
+  $source > $source'.tmp' && mv $source'.tmp' $source
+
+
+  jq 'del(.["browser"]."lib/index") | del(.["react-native"]."lib/index")' \
+  $source1 > $source1'.tmp' && mv $source1'.tmp' $source1
+}
+
+function fix_comment_out_node_fetch_error_capturestacktrace {
+  log_fix "${FUNCNAME[0]}"
+  source="node_modules/node-fetch/lib/fetch-error.js"
+
+  awk '{sub(/^[ \t]*Error.captureStackTrace\(this, this.constructor\);/,"\/* Error.captureStackTrace(this, this.constructor); *\/")}1' \
+  $source > $source'.tmp' && mv $source'.tmp' $source
+}
+
+function fix {
+  fix_knex_sqlite3 && \
+  fix_rn_unbundle && \
+  fix_rn_networking_timeout && \
+  fix_ios_max_http_connections && \
+  fix_form_data_package_json && \
+  fix_node_fetch
+}
+
+fix

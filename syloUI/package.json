@@ -1,0 +1,36 @@
+{
+  "name": "syloUI",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node node_modules/react-native/local-cli/cli.js start",
+    "test": "jest",
+    "rename": "node ./scripts/renameProject.js",
+    "podinstall": "./scripts/podinstall"
+  },
+  "dependencies": {
+    "@react-native-community/async-storage": "^1.4.0",
+    "lottie-react-native": "^2.6.0",
+    "react": "16.8.3",
+    "react-native": "0.59.9",
+    "react-native-camera": "^1.10.1",
+    "react-native-keychain": "github:dn3010/react-native-keychain#1032082e42a33d9d67f538afe6e4cdffb1b6a512",
+    "react-native-randombytes": "^3.2.0",
+    "react-native-reanimated": "^1.0.0-alpha.12",
+    "react-native-sodium": "github:dn3010/react-native-sodium#b7ae61f73a1d42db14414c8f83e8f1e4f9b9c92a",
+    "react-native-svg": "^9.4.0",
+    "react-native-vector-icons": "^6.2.0",
+    "react-native-webrtc": "github:dn3010/react-native-webrtc#eade01a9d8e1d0a74dc62460691c7aae01897f23"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.4.5",
+    "@babel/runtime": "^7.4.5",
+    "babel-jest": "^24.8.0",
+    "jest": "^24.8.0",
+    "metro-react-native-babel-preset": "^0.54.1",
+    "react-test-renderer": "16.8.3"
+  },
+  "jest": {
+    "preset": "react-native"
+  }
+}

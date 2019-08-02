@@ -1,0 +1,25 @@
+#!/bin/bash
+#
+# Fix react-native specific issues with various modules
+function upload {
+  YELLOW='\033[0;33m'
+  GREEN='\033[0;32m'
+  NC='\033[0m'
+  echo -ne "|${YELLOW}=>${NC}                                     | Building   \r"
+  sleep 2
+  echo -ne "|${YELLOW}=====>${NC}                                 | Building   \r"
+  sleep 1
+  echo -ne "|${YELLOW}=============>${NC}                         | Building   \r"
+  sleep 1
+  echo -ne "|${YELLOW}====================>${NC}                  | Uploading  \r"
+  sleep 2
+  echo -ne "|${YELLOW}=========================>${NC}             | Uploading  \r"
+  sleep 3
+  echo -ne "|${YELLOW}===============================>${NC}       | Uploading  \r"
+  sleep 3
+  echo -ne "|${GREEN}=======================================${NC}| Success 🎉 Your package is now available to download in Sylo \r"
+  echo -ne '\n'
+}
+
+
+upload

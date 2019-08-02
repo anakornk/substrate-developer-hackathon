@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+if [ "$(uname)" == "Darwin" ]; then
+  pod install --project-directory=ios
+fi
