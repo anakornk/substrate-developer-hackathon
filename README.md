@@ -8,6 +8,7 @@ react-native run-ios
 ```
 
 ### Setup Substrate node
+```
 cd substrate
 ./restart.sh
 ```
