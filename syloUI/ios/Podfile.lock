@@ -6,19 +6,19 @@ PODS:
     - DoubleConversion
     - glog
   - glog (0.3.4)
-  - lottie-ios (2.5.3)
-  - lottie-react-native (2.6.0):
-    - lottie-ios
+  - lottie-ios (2.5.0)
+  - lottie-react-native (2.6.1):
+    - lottie-ios (~> 2.5.0)
     - React
   - React (0.59.9):
     - React/Core (= 0.59.9)
-  - react-native-camera (1.10.1):
+  - react-native-camera (1.13.1):
     - React
-    - react-native-camera/RCT (= 1.10.1)
-    - react-native-camera/RN (= 1.10.1)
-  - react-native-camera/RCT (1.10.1):
+    - react-native-camera/RCT (= 1.13.1)
+    - react-native-camera/RN (= 1.13.1)
+  - react-native-camera/RCT (1.13.1):
     - React
-  - react-native-camera/RN (1.10.1):
+  - react-native-camera/RN (1.13.1):
     - React
   - React/Core (0.59.9):
     - yoga (= 0.59.9.React)
@@ -62,15 +62,15 @@ PODS:
     - React/Core
     - React/fishhook
     - React/RCTBlob
-  - RNCAsyncStorage (1.4.0):
+  - RNCAsyncStorage (1.6.1):
     - React
   - RNKeychain (3.0.0):
     - React
-  - RNReanimated (1.0.0-alpha.12):
+  - RNReanimated (1.1.0):
     - React
-  - RNSVG (9.4.0):
+  - RNSVG (9.5.3):
     - React
-  - RNVectorIcons (6.2.0):
+  - RNVectorIcons (6.6.0):
     - React
   - yoga (0.59.9.React)
 
@@ -127,15 +127,15 @@ SPEC CHECKSUMS:
   DoubleConversion: e22e0762848812a87afd67ffda3998d9ef29170c
   Folly: de497beb10f102453a1afa9edbf8cf8a251890de
   glog: 1de0bb937dccdc981596d3b5825ebfb765017ded
-  lottie-ios: a50d5c0160425cd4b01b852bb9578963e6d92d31
-  lottie-react-native: 05b6e2dd502d7a91ff128036c4f0984363e5eb4a
+  lottie-ios: d699fdee68d7b63e721d949388b015fef1aaa4ac
+  lottie-react-native: 3d8181d43619b1fe804c828bd5a09d20fe8bdea7
   React: a86b92f00edbe1873a63e4a212c29b7a7ad5224f
-  react-native-camera: 4987a0eec20dcf25dc0a61f8f8505c43379dd9ae
-  RNCAsyncStorage: b82dc6e5b39a625d70e3b3492bff75c0de94ba71
+  react-native-camera: b322bc25f47536219473c6d00c666d221f7f2695
+  RNCAsyncStorage: 2e2e3feb9bdadc752a026703d8c4065ca912e75a
   RNKeychain: c2e80f306e4d57e296133051d1e448b5289b3024
-  RNReanimated: b7adc1a5e4eca563966cfcbd982429ebd70d6b17
-  RNSVG: 9cb6e958c4b6a1f58185ac72a350b148947d6fed
-  RNVectorIcons: b6b131d2fdc2e240f7aba41296df869141443793
+  RNReanimated: 7a52c90473b5e81c13408d40d797b98387eaddde
+  RNSVG: 90c76b7cf235654d45e54655b6c189ea4041057c
+  RNVectorIcons: 0bb4def82230be1333ddaeee9fcba45f0b288ed4
   yoga: 03ff42a6f223fb88deeaed60249020d80c3091ee
 
 PODFILE CHECKSUM: 6d6f3c8debd1a31d0b8b065ee61341049871dc4f

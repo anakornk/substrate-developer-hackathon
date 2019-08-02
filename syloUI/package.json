@@ -9,18 +9,25 @@
     "podinstall": "./scripts/podinstall"
   },
   "dependencies": {
+    "@cennznet/api": "^0.15.0",
+    "@cennznet/crml-attestation": "^0.4.1",
+    "@cennznet/crml-cennzx-spot": "^0.8.0",
+    "@cennznet/crml-generic-asset": "^0.9.1",
     "@react-native-community/async-storage": "^1.4.0",
+    "bs58": "^4.0.1",
     "lottie-react-native": "^2.6.0",
+    "node-libs-react-native": "^1.0.3",
     "react": "16.8.3",
     "react-native": "0.59.9",
     "react-native-camera": "^1.10.1",
     "react-native-keychain": "github:dn3010/react-native-keychain#1032082e42a33d9d67f538afe6e4cdffb1b6a512",
     "react-native-randombytes": "^3.2.0",
     "react-native-reanimated": "^1.0.0-alpha.12",
-    "react-native-sodium": "github:dn3010/react-native-sodium#b7ae61f73a1d42db14414c8f83e8f1e4f9b9c92a",
+    "react-native-sodium": "^0.3.4",
     "react-native-svg": "^9.4.0",
     "react-native-vector-icons": "^6.2.0",
-    "react-native-webrtc": "github:dn3010/react-native-webrtc#eade01a9d8e1d0a74dc62460691c7aae01897f23"
+    "react-native-webrtc": "github:dn3010/react-native-webrtc#eade01a9d8e1d0a74dc62460691c7aae01897f23",
+    "vm-browserify": "^1.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.4.5",
