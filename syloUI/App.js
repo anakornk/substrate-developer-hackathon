@@ -26,8 +26,8 @@ export default class App extends Component<Props> {
     }
         // Initialise the provider to connect to the local node
     const providerUrl = Platform.select({
-      ios: "ws://127.0.0.1:9944",
-      android: "ws://10.0.2.2:9944"
+      ios: "wss://cennznet-node-0.centrality.cloud:9944",
+      android: "wss://cennznet-node-0.centrality.cloud:9944"
     });
     this.provider = new WsProvider(providerUrl);
   }
