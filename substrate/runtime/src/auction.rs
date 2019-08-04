@@ -30,9 +30,9 @@ type BalanceOf<T> = <<T as Trait>::Currency as Currency<<T as system::Trait>::Ac
 #[cfg_attr(feature = "std", derive(Debug))]
 #[derive(Default, Encode, Decode)]
 pub struct Product {
-    name: u64,
-    imageHash: u64,
-    description: u64,
+    name: [u8;32],
+    imageHash: [u8;32],
+    description: [u8;32],
     // startPrice: Option<BalanceOf<T>>,
     // highestPrice: Option<BalanceOf<T>>,
     // winner: Option<<T as system::Trait>::AccountId>,
@@ -106,7 +106,7 @@ decl_module! {
             }
         }
         /// 添加新商品
-        pub fn add_product(origin, product_name: u64, image_hash: u64, description: u64) {
+        pub fn add_product(origin, product_name: [u8;32], image_hash: [u8;32], description: [u8;32]) {
             let sender = ensure_signed(origin)?;
             let new_product_id = Self::do_add_product(&sender, product_name, image_hash, description)?;
 
@@ -132,7 +132,7 @@ decl_module! {
         pub fn stop(origin, product_id: T::ProductIndex) {
             let sender = ensure_signed(origin)?;
             // 发布者才可以结束拍卖
-            ensure!(<OwnedProducts<T>>::exists(&(sender.clone(), Some(product_id))), "Only owner can cancel!");
+            ensure!(<OwnedProducts<T>>::exists(&(sender.clone(), Some(product_id))), "Only owner can stop!");
             // 已经在拍卖的商品才可以结束拍卖
             ensure!(<ProductsForAuc<T>>::exists(&(sender.clone(), Some(product_id))), "Product is not on auction!");
             
@@ -161,7 +161,7 @@ impl<T: Trait> Module<T> {
         <ProductsForAucList<T>>::append(owner, product_id);
     }
 
-    fn do_add_product(sender: &T::AccountId, product_name: u64, image_hash: u64, description: u64) ->
+    fn do_add_product(sender: &T::AccountId, product_name: [u8;32], image_hash: [u8;32], description: [u8;32]) ->
      result::Result<T::ProductIndex, &'static str> {
 
         let product = Product{
