@@ -7,68 +7,73 @@
  */
 
 import React, {Component} from 'react';
-import {Platform, StyleSheet, Text, View} from 'react-native';
-import { Api, WsProvider } from "@cennznet/api";
+import { Platform } from 'react-native';
+import {
+  createStackNavigator,
+  createAppContainer,
+  createDrawerNavigator,
+} from 'react-navigation';
+import AuctionScreen from './Screens/AuctionScreen';
+import ListScreen from './Screens/ListScreen';
+import MyItemsScreen from './Screens/MyItemsScreen';
 
-const instructions = Platform.select({
-  ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
-  android:
-    'Double tap R on your keyboard to reload,\n' +
-    'Shake or press menu button for dev menu',
+const AuctionStack = createStackNavigator({
+  List: {
+    screen: ListScreen,
+    navigationOptions: {
+      header: null
+    }
+  },
+  Auction: {
+    screen: AuctionScreen,
+    navigationOptions: {
+      header: null
+    }
+  }
 });
 
-type Props = {};
-export default class App extends Component<Props> {
+const DrawerNavigator = createDrawerNavigator(
+  {
+    Auctions: AuctionStack,
+    MyItems: MyItemsScreen
+  },
+  {
+    hideStatusBar: true,
+    drawerBackgroundColor: "rgba(255,255,255,.9)",
+    navigationOptions: {
+      header: null,
+    }
+  }
+);
+
+const AppContainer = createAppContainer(DrawerNavigator);
+export default class App extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      text: '0'
-    }
-        // Initialise the provider to connect to the local node
-    const providerUrl = Platform.select({
-      ios: "wss://cennznet-node-0.centrality.cloud:9944",
-      android: "wss://cennznet-node-0.centrality.cloud:9944"
+    
+    this.providerUrl = Platform.select({
+      ios: "ws://127.0.0.1:9944",
+      android: "ws://10.0.2.2:9944"
     });
-    this.provider = new WsProvider(providerUrl);
+
+    this.customTypes = {
+      Product: {
+        name: "u64",
+        imageHash: "u64",
+        description: "u64",
+        startPrice:
+          "Option<Balance>"
+      },
+      ProductIndex: "u32",
+      ProductLinkedItem: {
+        prev: "Option<ProductIndex>",
+        next: "Option<ProductIndex>"
+      }
+    };
+    
   }
 
-  async componentDidMount() {
-    this.api = await Api.create({
-      provider: this.provider
-    });
-    this.api.rpc.chain.subscribeNewHead(header => {
-      this.setState({
-        text: `Chain is at #${header.blockNumber}`
-      });
-    });
-  }
-  
   render() {
-    
-    return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>Welcome to Sylo Connected App</Text>
-        <Text>{this.state.text}</Text>
-      </View>
-    );
+    return <AppContainer screenProps={{providerUrl: this.providerUrl, customTypes: this.customTypes}}/>;
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
-});

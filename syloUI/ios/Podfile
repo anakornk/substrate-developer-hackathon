@@ -37,7 +37,7 @@ target 'syloUI' do
 
   pod 'RNCAsyncStorage', :path => '../node_modules/@react-native-community/async-storage'
 
-
+  pod 'RNGestureHandler', :podspec => '../node_modules/react-native-gesture-handler/RNGestureHandler.podspec'
 
   target 'syloUITests' do
     inherit! :search_paths
