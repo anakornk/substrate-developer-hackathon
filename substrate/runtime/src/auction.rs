@@ -30,9 +30,9 @@ impl Default for ProductStatus {
 #[cfg_attr(feature = "std", derive(Debug))]
 #[derive(Default, Encode, Decode)]
 pub struct Product<T> where T: Trait {
-    name: String,
-    imageHash: String,
-    description: String,
+    name: u64,
+    imageHash: u64,
+    description: u64,
     startPrice: Option<BalanceOf<T>>,
     // highestPrice: Option<BalanceOf<T>>,
     // winner: Option<<T as system::Trait>::AccountId>,
@@ -111,7 +111,7 @@ decl_module! {
             }
         }
         /// 添加新商品
-        pub fn add_product(origin, product_name: String, image_hash: String, description: String, 
+        pub fn add_product(origin, product_name: u64, image_hash: u64, description: u64, 
         start_price: Option<BalanceOf<T>>) {
             let sender = ensure_signed(origin)?;
             let new_product_id = Self::do_add_product(&sender, product_name, image_hash, description, start_price)?;
@@ -167,7 +167,7 @@ impl<T: Trait> Module<T> {
         <ProductsForAucList<T>>::append(owner, product_id);
     }
 
-    fn do_add_product(sender: &T::AccountId, product_name: String, image_hash: String, description: String, 
+    fn do_add_product(sender: &T::AccountId, product_name: u64, image_hash: u64, description: u64, 
     start_price: Option<BalanceOf<T>>) ->
      result::Result<T::ProductIndex, &'static str> {
 
