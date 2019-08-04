@@ -7,23 +7,12 @@
  */
 
 import React, {Component} from 'react';
+import { Platform } from 'react-native';
 import {
-  Platform,
-  StyleSheet,
-  View,
-  StatusBar,
-  TouchableOpacity
-} from "react-native";
-import { Api, WsProvider } from "@cennznet/api";
-import {
-  createMaterialTopTabNavigator,
   createStackNavigator,
   createAppContainer,
   createDrawerNavigator,
-  StackNavigator
-  
 } from 'react-navigation';
-import { Container, Header, Content, Button, Text, Left, Icon, Body, Title, Right } from "native-base";
 import AuctionScreen from './Screens/AuctionScreen';
 import ListScreen from './Screens/ListScreen';
 import MyItemsScreen from './Screens/MyItemsScreen';
@@ -43,10 +32,6 @@ const AuctionStack = createStackNavigator({
   }
 });
 
-
-
-
-
 const DrawerNavigator = createDrawerNavigator(
   {
     Auctions: AuctionStack,
@@ -61,7 +46,26 @@ const DrawerNavigator = createDrawerNavigator(
   }
 );
 
-export default createAppContainer(DrawerNavigator);
+const AppContainer = createAppContainer(DrawerNavigator);
+export default class App extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      text: '0'
+    }
+        // Initialise the provider to connect to the local node
+    this.providerUrl = Platform.select({
+      ios: "ws://127.0.0.1:9944",
+      android: "wss://mx-hashpire-test.ap1.onfinality.io"
+    });
+    
+    // this.providerUrl = new WsProvider(providerUrl);
+  }
+
+  render() {
+    return <AppContainer screenProps={{providerUrl: this.providerUrl}}/>;
+  }
+}
 // type Props = {};
 // export default class App extends Component<Props> {
 //   constructor(props) {
@@ -99,21 +103,3 @@ export default createAppContainer(DrawerNavigator);
 //   }
 // }
 
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     backgroundColor: '#F5FCFF',
-//   },
-//   welcome: {
-//     fontSize: 20,
-//     textAlign: 'center',
-//     margin: 10,
-//   },
-//   instructions: {
-//     textAlign: 'center',
-//     color: '#333333',
-//     marginBottom: 5,
-//   },
-// });

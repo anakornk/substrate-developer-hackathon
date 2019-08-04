@@ -6,7 +6,6 @@ import {
   StatusBar,
   TouchableOpacity
 } from "react-native";
-import { Api, WsProvider } from "@cennznet/api";
 import {
   createMaterialTopTabNavigator,
   createStackNavigator,
@@ -27,6 +26,22 @@ import {
 } from "native-base";
 
 class AuctionScreen extends React.Component {
+  constructor(props) {
+    super(props);
+    this.api = this.props.navigation.state.params.api;
+    this.state = {
+      blockNumber: '0'
+    }
+  }
+
+  async componentDidMount() {
+    this.api.rpc.chain.subscribeNewHead(header => {
+      this.setState({
+        blockNumber: header.blockNumber
+      });
+    });
+  }
+
   render() {
     return (
       <Container>
@@ -55,6 +70,7 @@ class AuctionScreen extends React.Component {
           <Button light>
             <Text>Click Me!</Text>
           </Button>
+          <Text>{`${this.state.blockNumber}`}</Text>
         </Content>
       </Container>
     );

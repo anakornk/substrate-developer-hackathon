@@ -12,14 +12,36 @@ import {
   Title,
   Right
 } from "native-base";
+import { ApiPromise, WsProvider } from "@polkadot/api";
 
 class MyItemsScreen extends React.Component {
   static navigationOptions = {
     title: "My Items"
   };
 
+  constructor(props) {
+    super(props);
+    this.state = {
+      blockNumber: 'haha'
+    }
+    let { providerUrl } = this.props.screenProps;
+    this.providerUrl = new WsProvider(providerUrl);
+  }
+
+  async componentDidMount() {
+    this.api = await ApiPromise.create({
+      provider: this.provider
+    });
+    this.api.rpc.chain.subscribeNewHead(header => {
+      this.setState({
+        blockNumber: header.blockNumber
+      });
+    });
+  }
+
   render() {
     const { navigate } = this.props.navigation;
+    let { blockNumber } = this.state;
     return (
       <Container>
         <Header>
@@ -34,7 +56,8 @@ class MyItemsScreen extends React.Component {
           </Right>
         </Header>
         <Content>
-          <Text>List all my items here</Text>
+          <Text>{`Chain is at #${blockNumber}`}</Text>
+          <Text>{JSON.stringify(this.props)}</Text>
         </Content>
       </Container>
     );
