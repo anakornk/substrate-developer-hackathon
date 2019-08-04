@@ -79,6 +79,8 @@ decl_event! {
         AuctionCanceled(AccountId, ProductIndex),
         /// product sold: (owner, bidder, product_id, price)
         Sold(AccountId, AccountId, ProductIndex, Option<Balance>),
+        /// auction failed (owner, product_id, start_price)
+        AuctionFailed(AccountId, ProductIndex, Option<Balance>),
     }
 }
 
@@ -93,6 +95,8 @@ decl_module! {
             // 是否设定了起拍价
             if let Some(start_price) = start_price {
                 <ProductPrices<T>>::insert(product_id, start_price);
+                // 初始化bidder
+                <Bidder<T>>::insert(product_id, sender.clone());
                 // <ProductPrices<T>>::insert(product_id, (Some(start_price), sender));
             } else {
                 <ProductPrices<T>>::remove(product_id);
@@ -126,7 +130,7 @@ decl_module! {
             // 已经在拍卖的商品才可以取消
             ensure!(<ProductsForAuc<T>>::exists(&(sender.clone(), Some(product_id))), "Product is not on auction!");
             Self::do_cancel(&sender, product_id);
-            Self::deposit_event(RawEvent::NewProduct(sender, product_id));
+            Self::deposit_event(RawEvent::AuctionCanceled(sender, product_id));
         }
         /// 拍卖结束
         pub fn stop(origin, product_id: T::ProductIndex) {
@@ -144,14 +148,19 @@ decl_module! {
             let bidder = Self::bidder(product_id);
             ensure!(bidder.is_some(), "Invalid bidder");
             let bidder = bidder.unwrap();
-            // 从拍卖商品列表移除
-            Self::remove_from_auction(&sender, product_id)?;
-            // 资金划拨
-            T::Currency::transfer(&bidder, &sender, price)?;
-            // 转移所有权
-            Self::do_transfer(&sender, &bidder, product_id);
-
-            Self::deposit_event(RawEvent::Sold(sender, bidder, product_id, Some(price)));
+            if bidder == sender {
+                // 无人成功竞拍
+                Self::do_cancel(&sender, product_id);
+                Self::deposit_event(RawEvent::AuctionFailed(sender, product_id, Some(price)));
+            } else {
+                // 从拍卖商品列表移除
+                Self::remove_from_auction(&sender, product_id)?;
+                // 资金划拨
+                T::Currency::transfer(&bidder, &sender, price)?;
+                // 转移所有权
+                Self::do_transfer(&sender, &bidder, product_id);
+                Self::deposit_event(RawEvent::Sold(sender, bidder, product_id, Some(price)));
+            }
         }
     }
 }
@@ -373,6 +382,8 @@ mod tests {
             assert_eq!(OwnedProductsTest::get(&(0, Some(1))), None);
             assert_eq!(OwnedProductsTest::get(&(0, Some(2))), None);
             assert_eq!(OwnedProductsTest::get(&(0, Some(3))), None);
+            let u = Encode::encode(&[1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10,1,2]);
+            println!("{:?}", u);
         });
     }
 }
