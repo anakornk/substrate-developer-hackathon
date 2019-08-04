@@ -1,3 +1,25 @@
+# auction模块说明
+
+## 功能
+
+用户可以添加想要拍卖的商品（后续将图片和描述信息存入ipfs，链上存储Hash），设定拍卖起始价，开始拍卖，也可以撤销拍卖。想参加拍卖的用户可以竞价，一定时间后（暂由链外触发）拍卖主可以结束一场拍卖，当前出价最高的用户获得商品，若无人出价高于起始价，则拍卖失败。
+
+## 调用方法
+
+```rust
+// 添加商品
+add_product(product_name: [u8;32], image_hash: [u8;32], description: [u8;32])
+// 开始一场拍卖
+display(product_id: T::ProductIndex, start_price: Option<BalanceOf<T>>)
+// 竞价
+bid(product_id: T::ProductIndex, price: BalanceOf<T>)
+// 取消拍卖
+cancel(product_id: T::ProductIndex)
+// 拍卖结束
+stop(product_id: T::ProductIndex)
+
+```
+
 # substrate
 
 A new SRML-based Substrate node, ready for hacking.

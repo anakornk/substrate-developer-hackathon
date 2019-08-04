@@ -1,0 +1,12 @@
+{
+  "Product": {
+    "name": "[u8;32]",
+    "imageHash": "[u8;32]",
+    "description": "[u8;32]"
+  },
+  "ProductIndex": "u32",
+  "ProductLinkedItem": {
+    "prev": "Option<ProductIndex>",
+    "next": "Option<ProductIndex>"
+  }
+}
