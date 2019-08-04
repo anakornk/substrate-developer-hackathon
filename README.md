@@ -13,7 +13,7 @@ react-native run-ios
 2. commit `df0402391a9f238a8105dd63b38d50a66611fb1a` 把 commit `2424976f7af7f5eeb7740e12c3dfa3e0d270766b` 和 commit `ab7222cf7a9a06a2d58e466f3bc9c91da0c5bf9a` 进行了merge之后，Sylo前端跑不动，报了错误 `console.error: "2019-08-04 20:57:47", "  API/DECORATOR:", {}`，由于时间原因，现在还没找到具体原因和解决方式。
 
 ---
-为了使得Sylo/React 环境能跑@Polkadot/api , 我们做了一下操作
+为了使得Sylo/React Native 环境能跑@Polkadot/api , 我们做了一下操作
 ```
 yarn add node-libs-react-native
 yarn add vm-browserify
