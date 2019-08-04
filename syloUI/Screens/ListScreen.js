@@ -24,13 +24,16 @@ class ListScreen extends React.Component {
     this.state = {
       blockNumber: "haha"
     };
-    let { providerUrl } = this.props.screenProps;
-    this.providerUrl = new WsProvider(providerUrl);
+    let { providerUrl, customTypes } = this.props.screenProps;
+    this.provider = new WsProvider(providerUrl);
+    this.customTypes = customTypes;
+
   }
 
   async componentDidMount() {
     this.api = await ApiPromise.create({
-      provider: this.provider
+      provider: this.provider,
+      types: this.customTypes
     });
   }
 

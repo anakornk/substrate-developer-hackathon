@@ -52,13 +52,28 @@ export default class App extends Component {
     super(props);
     
     this.providerUrl = Platform.select({
-      ios: "ws://localhost:9944",
+      ios: "ws://127.0.0.1:9944",
       android: "ws://10.0.2.2:9944"
     });
+
+    this.customTypes = {
+      Product: {
+        name: "u64",
+        imageHash: "u64",
+        description: "u64",
+        startPrice:
+          "Option<Balance>"
+      },
+      ProductIndex: "u32",
+      ProductLinkedItem: {
+        prev: "Option<ProductIndex>",
+        next: "Option<ProductIndex>"
+      }
+    };
     
   }
 
   render() {
-    return <AppContainer screenProps={{providerUrl: this.providerUrl}}/>;
+    return <AppContainer screenProps={{providerUrl: this.providerUrl, customTypes: this.customTypes}}/>;
   }
 }
