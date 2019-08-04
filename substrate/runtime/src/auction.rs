@@ -208,7 +208,10 @@ impl<T: Trait> Module<T> {
         ensure!(product.is_some(), "Invalid product id.");
         // 不应该参与自己发布的商品拍卖
         ensure!(Self::product_owner(&product_id).map(|owner| owner != *sender).unwrap_or(false),
-        "should not bid owned product");  
+        "should not bid owned product");
+        // 查看竞价人账户余额是否足够
+        let balance = T::Currency::free_balance(sender);
+        ensure!(balance >= price, "Insufficient balance.");
         // 当前最高出价
         let last_price = Self::product_price(&product_id);
         ensure!(last_price.is_some(), "Not on auction.");
