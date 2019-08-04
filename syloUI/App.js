@@ -55,8 +55,8 @@ export default class App extends Component {
     }
         // Initialise the provider to connect to the local node
     this.providerUrl = Platform.select({
-      ios: "ws://127.0.0.1:9944",
-      android: "wss://mx-hashpire-test.ap1.onfinality.io"
+      ios: "ws://localhost:9944",
+      android: "ws://10.0.2.2:9944"
     });
     
     // this.providerUrl = new WsProvider(providerUrl);
