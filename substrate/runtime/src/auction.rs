@@ -16,34 +16,29 @@ pub trait Trait: system::Trait {
 
 type BalanceOf<T> = <<T as Trait>::Currency as Currency<<T as system::Trait>::AccountId>>::Balance;
 
-#[derive(Debug, Encode, Decode)]
-enum ProductStatus {
-    Open,
-    Sold,
-    Off,
-}
+// #[derive(Debug, Encode, Decode)]
+// enum ProductStatus {
+//     Open,
+//     Sold,
+//     Off,
+// }
 
-impl Default for ProductStatus {
-    fn default() -> Self { ProductStatus::Open }
-}
+// impl Default for ProductStatus {
+//     fn default() -> Self { ProductStatus::Open }
+// }
 
 #[cfg_attr(feature = "std", derive(Debug))]
 #[derive(Default, Encode, Decode)]
-pub struct Product<T> where T: Trait {
-    name: u64,
-    imageHash: u64,
-    description: u64,
-    startPrice: Option<BalanceOf<T>>,
+pub struct Product {
+    name: [u8;32],
+    imageHash: [u8;32],
+    description: [u8;32],
+    // startPrice: Option<BalanceOf<T>>,
     // highestPrice: Option<BalanceOf<T>>,
     // winner: Option<<T as system::Trait>::AccountId>,
     // status: ProductStatus
 }
 
-// #[derive(Encode, Decode)]
-// pub struct BidInfo<T> where T: Trait {
-//     price: Option<BalanceOf<T>>,
-//     bidder: T::AccountId
-// }
 
 type ProductLinkedItem<T> = LinkedItem<<T as Trait>::ProductIndex>;
 type OwnedProductsList<T> = LinkedList<OwnedProducts<T>, <T as system::Trait>::AccountId, <T as Trait>::ProductIndex>;
@@ -52,7 +47,7 @@ type ProductsForAucList<T> = LinkedList<ProductsForAuc<T>, <T as system::Trait>:
 decl_storage! {
     trait Store for Module<T: Trait> as Products {
         /// store all the products
-        pub Products get(product): map T::ProductIndex => Option<Product<T>>;
+        pub Products get(product): map T::ProductIndex => Option<Product>;
         /// all products count
         pub ProductsCount get(products_count): T::ProductIndex;
         /// user owned products: user product index => global product index
@@ -111,10 +106,9 @@ decl_module! {
             }
         }
         /// 添加新商品
-        pub fn add_product(origin, product_name: u64, image_hash: u64, description: u64, 
-        start_price: Option<BalanceOf<T>>) {
+        pub fn add_product(origin, product_name: [u8;32], image_hash: [u8;32], description: [u8;32]) {
             let sender = ensure_signed(origin)?;
-            let new_product_id = Self::do_add_product(&sender, product_name, image_hash, description, start_price)?;
+            let new_product_id = Self::do_add_product(&sender, product_name, image_hash, description)?;
 
             Self::deposit_event(RawEvent::NewProduct(sender, new_product_id));
         }
@@ -122,7 +116,7 @@ decl_module! {
         pub fn bid(origin, product_id: T::ProductIndex, price: BalanceOf<T>) {
             let sender = ensure_signed(origin)?;
 
-            Self::do_bid(&sender, product_id, price);
+            Self::do_bid(&sender, product_id, price)?;
         }
         /// 取消拍卖
         pub fn cancel(origin, product_id: T::ProductIndex) {
@@ -138,7 +132,7 @@ decl_module! {
         pub fn stop(origin, product_id: T::ProductIndex) {
             let sender = ensure_signed(origin)?;
             // 发布者才可以结束拍卖
-            ensure!(<OwnedProducts<T>>::exists(&(sender.clone(), Some(product_id))), "Only owner can cancel!");
+            ensure!(<OwnedProducts<T>>::exists(&(sender.clone(), Some(product_id))), "Only owner can stop!");
             // 已经在拍卖的商品才可以结束拍卖
             ensure!(<ProductsForAuc<T>>::exists(&(sender.clone(), Some(product_id))), "Product is not on auction!");
             
@@ -151,9 +145,9 @@ decl_module! {
             ensure!(bidder.is_some(), "Invalid bidder");
             let bidder = bidder.unwrap();
             // 从拍卖商品列表移除
-            Self::remove_from_auction(&sender, product_id);
+            Self::remove_from_auction(&sender, product_id)?;
             // 资金划拨
-            T::Currency::transfer(&bidder, &sender, price);
+            T::Currency::transfer(&bidder, &sender, price)?;
             // 转移所有权
             Self::do_transfer(&sender, &bidder, product_id);
 
@@ -167,14 +161,13 @@ impl<T: Trait> Module<T> {
         <ProductsForAucList<T>>::append(owner, product_id);
     }
 
-    fn do_add_product(sender: &T::AccountId, product_name: u64, image_hash: u64, description: u64, 
-    start_price: Option<BalanceOf<T>>) ->
+    fn do_add_product(sender: &T::AccountId, product_name: [u8;32], image_hash: [u8;32], description: [u8;32]) ->
      result::Result<T::ProductIndex, &'static str> {
 
         let product = Product{
             name: product_name,
             imageHash: image_hash,
-            startPrice: start_price,
+            // startPrice: start_price,
             description: description,
             // highestPrice: start_price,
             // winner: None,
@@ -187,7 +180,7 @@ impl<T: Trait> Module<T> {
         Ok(new_product_id)
     }
 
-    fn insert_product(owner: &T::AccountId, product_id: T::ProductIndex, product: Product<T>) {
+    fn insert_product(owner: &T::AccountId, product_id: T::ProductIndex, product: Product) {
         <Products<T>>::insert(product_id, product);
         <ProductsCount<T>>::put(product_id + One::one());
         <ProductOwner<T>>::insert(product_id, owner);
@@ -208,7 +201,10 @@ impl<T: Trait> Module<T> {
         ensure!(product.is_some(), "Invalid product id.");
         // 不应该参与自己发布的商品拍卖
         ensure!(Self::product_owner(&product_id).map(|owner| owner != *sender).unwrap_or(false),
-        "should not bid owned product");  
+        "should not bid owned product");
+        // 查看竞价人账户余额是否足够
+        let balance = T::Currency::free_balance(sender);
+        ensure!(balance >= price, "Insufficient balance.");
         // 当前最高出价
         let last_price = Self::product_price(&product_id);
         ensure!(last_price.is_some(), "Not on auction.");
@@ -236,5 +232,147 @@ impl<T: Trait> Module<T> {
         <OwnedProductsList<T>>::remove(from, product_id);
         <OwnedProductsList<T>>::append(to, product_id);
         <ProductOwner<T>>::insert(product_id, to);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+	use runtime_io::with_externalities;
+	use primitives::{H256, Blake2Hasher};
+	use support::{impl_outer_origin, assert_ok};
+	use runtime_primitives::{
+		BuildStorage,
+		traits::{BlakeTwo256, IdentityLookup},
+		testing::{Digest, DigestItem, Header}
+	};
+
+	impl_outer_origin! {
+		pub enum Origin for Test {}
+	}
+
+	// For testing the module, we construct most of a mock runtime. This means
+	// first constructing a configuration type (`Test`) which `impl`s each of the
+	// configuration traits of modules we want to use.
+	#[derive(Clone, Eq, PartialEq, Debug)]
+	pub struct Test;
+	impl system::Trait for Test {
+		type Origin = Origin;
+		type Index = u64;
+		type BlockNumber = u64;
+		type Hash = H256;
+		type Hashing = BlakeTwo256;
+		type Digest = Digest;
+		type AccountId = u64;
+		type Lookup = IdentityLookup<Self::AccountId>;
+		type Header = Header;
+		type Event = ();
+		type Log = DigestItem;
+	}
+
+    impl balances::Trait for Test {
+        /// The type for recording an account's balance.
+        type Balance = u32;
+        /// What to do if an account's free balance gets zeroed.
+        type OnFreeBalanceZero = ();
+        /// What to do if a new account is created.
+        type OnNewAccount = ();
+        /// The uniquitous event type.
+        type Event = ();
+
+        type TransactionPayment = ();
+        type DustRemoval = ();
+        type TransferPayment = ();
+    }
+
+	impl Trait for Test {
+		type ProductIndex = u32;
+        type Currency = balances::Module<Test>;
+        type Event = ();
+	}
+	type ProductModule = Module<Test>;
+
+    type OwnedProductsTest = OwnedProducts<Test>;
+
+	// This function basically just builds a genesis storage key/value store according to
+	// our desired mockup.
+	fn new_test_ext() -> runtime_io::TestExternalities<Blake2Hasher> {
+		system::GenesisConfig::<Test>::default().build_storage().unwrap().0.into()
+	}
+
+    #[test]
+	fn owned_products_can_append_values() {
+		with_externalities(&mut new_test_ext(), || {
+			OwnedProductsList::<Test>::append(&0, 1);
+            assert_eq!(OwnedProductsTest::get(&(0, None)), Some(ProductLinkedItem::<Test> {
+                prev: Some(1),
+                next: Some(1),
+            }));
+            assert_eq!(OwnedProductsTest::get(&(0, Some(1))), Some(ProductLinkedItem::<Test> {
+                prev: None,
+                next: None,
+            }));
+
+            OwnedProductsList::<Test>::append(&0, 2);
+            assert_eq!(OwnedProductsTest::get(&(0, None)), Some(ProductLinkedItem::<Test> {
+                prev: Some(2),
+                next: Some(1),
+            }));
+            assert_eq!(OwnedProductsTest::get(&(0, Some(1))), Some(ProductLinkedItem::<Test> {
+                prev: None,
+                next: Some(2),
+            }));
+            assert_eq!(OwnedProductsTest::get(&(0, Some(2))), Some(ProductLinkedItem::<Test> {
+                prev: Some(1),
+                next: None,
+            }));
+		});
+	}
+
+    #[test]
+	fn owned_products_can_remove_values() {
+		with_externalities(&mut new_test_ext(), || {
+            OwnedProductsList::<Test>::append(&0, 1);
+            OwnedProductsList::<Test>::append(&0, 2);
+            OwnedProductsList::<Test>::append(&0, 3);
+
+            OwnedProductsList::<Test>::remove(&0, 2);
+
+            assert_eq!(OwnedProductsTest::get(&(0, None)), Some(ProductLinkedItem::<Test> {
+                prev: Some(3),
+                next: Some(1),
+            }));
+            assert_eq!(OwnedProductsTest::get(&(0, Some(1))), Some(ProductLinkedItem::<Test> {
+                prev: None,
+                next: Some(3),
+            }));
+            assert_eq!(OwnedProductsTest::get(&(0, Some(2))), None);
+            assert_eq!(OwnedProductsTest::get(&(0, Some(3))), Some(ProductLinkedItem::<Test> {
+                prev: Some(1),
+                next: None,
+            }));
+
+            OwnedProductsList::<Test>::remove(&0, 1);
+            assert_eq!(OwnedProductsTest::get(&(0, None)), Some(ProductLinkedItem::<Test> {
+                prev: Some(3),
+                next: Some(3),
+            }));
+            assert_eq!(OwnedProductsTest::get(&(0, Some(1))), None);
+            assert_eq!(OwnedProductsTest::get(&(0, Some(2))), None);
+            assert_eq!(OwnedProductsTest::get(&(0, Some(3))), Some(ProductLinkedItem::<Test> {
+                prev: None,
+                next: None,
+            }));
+
+            OwnedProductsList::<Test>::remove(&0, 3);
+            assert_eq!(OwnedProductsTest::get(&(0, None)), Some(ProductLinkedItem::<Test> {
+                prev: None,
+                next: None,
+            }));
+            assert_eq!(OwnedProductsTest::get(&(0, Some(1))), None);
+            assert_eq!(OwnedProductsTest::get(&(0, Some(2))), None);
+            assert_eq!(OwnedProductsTest::get(&(0, Some(3))), None);
+        });
     }
 }
